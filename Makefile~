@@ -1,0 +1,2 @@
+mandle: mandle2.c
+	mpicc -lm -lGLU -lglut -o mandle mandle2.c
