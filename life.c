@@ -2,7 +2,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#if __APPLE__
+#include <GLUT/glut.h>
+#else
 #include <GL/glut.h>
+#endif
 #include "mpi.h"
  
 unsigned int* GRID;
