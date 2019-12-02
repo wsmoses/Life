@@ -1,4 +1,4 @@
- 
+
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
@@ -8,7 +8,7 @@
 #include <GL/glut.h>
 #endif
 #include "mpi.h"
- 
+
 unsigned int* GRID;
 int W = 200, H = 100;
 int* KEY;
@@ -32,25 +32,25 @@ unsigned int get(int x, int y){
 }
 unsigned int setThe(int x, int y, unsigned int d){
   if(x<0) x = GRID_WIDTH+x;
-  return THE_GRID[y*GRID_WIDTH+x] = d; 
+  return THE_GRID[y*GRID_WIDTH+x] = d;
 }
 unsigned int set(int x, int y, unsigned int d){
-  return NEW_GRID[(y+1)*GRID_WIDTH+x] = d; 
+  return NEW_GRID[(y+1)*GRID_WIDTH+x] = d;
 }
 
 void calc(){
   MPI_Send(FULL_GRID+GRID_WIDTH, GRID_WIDTH, MPI_UNSIGNED,TOP,tag,MPI_COMM_WORLD);
    //   printf("Column from %d to %d\n", rank, TOP);
-  
+
       MPI_Send(FULL_GRID+GRID_HEIGHT*GRID_WIDTH, GRID_WIDTH, MPI_UNSIGNED,BOTTOM,tag,MPI_COMM_WORLD);
  //  printf("Column from %d to %d\n", rank, BOTTOM);
-    
+
 MPI_Recv(FULL_GRID+(1+GRID_HEIGHT)*GRID_WIDTH,GRID_WIDTH,MPI_UNSIGNED,BOTTOM,tag,MPI_COMM_WORLD,&status);
    //   printf("Got Column from %d to %d\n", BOTTOM, rank);
-      
+
   MPI_Recv(FULL_GRID, GRID_WIDTH, MPI_UNSIGNED, TOP, tag,MPI_COMM_WORLD,&status);
    //   printf("Got Column from %d to %d\n", TOP, rank);
-    
+
   int x, y;
   int sum = 0;
   /*
@@ -63,6 +63,7 @@ MPI_Recv(FULL_GRID+(1+GRID_HEIGHT)*GRID_WIDTH,GRID_WIDTH,MPI_UNSIGNED,BOTTOM,tag
   }
   printf("\n");
   }*/
+  #pragma omp parallel for
   for(x=0; x<GRID_WIDTH; x++)
   for(y=0; y<GRID_HEIGHT; y++){
     sum=get(x-1, y)+get(x-1, y-1)+get(x-1, y+1)+get(x+1, y-1)+get(x+1, y+1)+get(x+1, y)+get(x, y-1)+get(x,y+1);
@@ -86,7 +87,7 @@ void displayfunc(void)
 // double xSize = 1, ySize = 1;
   double xSize = (double)xWidth/W, ySize = (double)yWidth/H;
   for(i = 1; i<=size; i++){
-    MPI_Recv(FULL_GRID+GRID_WIDTH, GRID_WIDTH*GRID_HEIGHT, MPI_UNSIGNED, 
+    MPI_Recv(FULL_GRID+GRID_WIDTH, GRID_WIDTH*GRID_HEIGHT, MPI_UNSIGNED,
     MPI_ANY_SOURCE, tag,MPI_COMM_WORLD,&status);
     for(y = 0; y<GRID_HEIGHT; y++){
       for(x = 0; x<GRID_WIDTH; x++){
@@ -131,9 +132,9 @@ void motionfunc(int xscr,int yscr)
 void keyfunc(unsigned char key,int xscr,int yscr)
 {
  switch(key){
-   
+
    }
-   
+
          glutPostRedisplay();
 }
 
@@ -176,7 +177,7 @@ void printTheGrid(){
    }
    printf("\n");
  }
-  
+
 }
 void printG(){
 int i, j;
@@ -189,7 +190,7 @@ printf("\n");
 }
 }
 int main(int argc,char* argv[])
-{  
+{
     KEY = (unsigned int*)malloc(sizeof(unsigned int));
   MPI_Init(&argc,&argv);
   MPI_Comm_size(MPI_COMM_WORLD,&size);
@@ -207,15 +208,15 @@ int main(int argc,char* argv[])
    // printTheGrid();
     int i;
     for(i = 1; i<=size; i++){
-   MPI_Send(THE_GRID+(i-1)*GRID_WIDTH*GRID_HEIGHT,GRID_HEIGHT*GRID_WIDTH,MPI_UNSIGNED,i,tag,MPI_COMM_WORLD);    
+   MPI_Send(THE_GRID+(i-1)*GRID_WIDTH*GRID_HEIGHT,GRID_HEIGHT*GRID_WIDTH,MPI_UNSIGNED,i,tag,MPI_COMM_WORLD);
     }
     glutInit(&argc,argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB); 
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize(xWidth, yWidth);
     glutCreateWindow("Conway's game of life");
     glClearColor(1.0,1.0,1.0,0.0);
     glShadeModel(GL_SMOOTH);
-   
+
     glutDisplayFunc(displayfunc);    // register callback functions
     glutIdleFunc(NULL);             // no animation
     glutMouseFunc(mousefunc);
@@ -232,11 +233,11 @@ int main(int argc,char* argv[])
     if(TOP==0) TOP = size;
     NEW_GRID = (unsigned int*)malloc(sizeof(unsigned int)*GRID_WIDTH*(GRID_HEIGHT+2));
     FULL_GRID = (unsigned int*)malloc(sizeof(unsigned int)*GRID_WIDTH*(GRID_HEIGHT+2));
-    
-      
-MPI_Recv(FULL_GRID+GRID_WIDTH,GRID_HEIGHT*GRID_WIDTH,MPI_UNSIGNED,0,tag,MPI_COMM_WORLD,&status);   
-//printf("%d-----------\n", FULL_GRID[GRID_WIDTH]);	
-//printG();   
+
+
+MPI_Recv(FULL_GRID+GRID_WIDTH,GRID_HEIGHT*GRID_WIDTH,MPI_UNSIGNED,0,tag,MPI_COMM_WORLD,&status);
+//printf("%d-----------\n", FULL_GRID[GRID_WIDTH]);
+//printG();
  while(1){
       MPI_Recv(KEY,1,MPI_UNSIGNED,0,tag,MPI_COMM_WORLD,&status);
 //      printf("%d Received request\n", rank);

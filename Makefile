@@ -1,7 +1,7 @@
 ifeq ($(UNAME_S),Darwin)
-CCFLAGS += -lglut
+CCFLAGS += -lglut  -fopenmp
 else
-CCFLAGS += -framework GLUT -framework OpenGL -framework Cocoa 
+CCFLAGS += -framework GLUT -framework OpenGL -framework Cocoa -fopenmp
 endif
 
 life: life.c
